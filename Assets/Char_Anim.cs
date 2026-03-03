@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Char_Anim : MonoBehaviour
 {
@@ -23,6 +24,7 @@ public class Char_Anim : MonoBehaviour
     public AudioClip levelFinishClip;
     public int health = 3;
     public Text healthDisplay;
+    public GameObject gameOverText;
     Vector3 spawnPoint; // This will store the starting position
 
     Rigidbody2D rb;
@@ -49,6 +51,12 @@ public class Char_Anim : MonoBehaviour
         if (transform.position.y < -10f) 
         {
             TakeDamage(1); 
+        }
+        //Restart when dead
+        if (health <= 0 && Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(0);
         }
     }
 
@@ -132,19 +140,22 @@ public class Char_Anim : MonoBehaviour
 
     public void TakeDamage(int amount)
     {
+        if (health <= 0)
+            return;
         health -= amount;
         if (health <= 0)
         {
-            // Restarts the level if out of hearts
-            UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+            health = 0; //stop negative numbers
+            gameOverText.SetActive(true);
+            Time.timeScale = 0f;
         }
         else
         {
-            // Move player back to start and reset their speed so they don't keep falling
             transform.position = spawnPoint;
             rb.linearVelocity = Vector2.zero;
         }
-        if (healthDisplay != null) {
+        if (healthDisplay != null)
+        {
             healthDisplay.text = "Hearts: " + health;
         }
     }
